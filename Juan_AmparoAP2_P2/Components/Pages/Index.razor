@@ -1,0 +1,134 @@
+﻿@page "/index"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Juan_AmparoAP2_P2.DAL;
+@using Juan_AmparoAP2_P2.Models;
+@using Juan_AmparoAP2_P2.Services;
+@inject AsignacionesServices asignacionesServices
+@inject estudiantesServices estudiantesServices
+@inject TiposPuntosServices tiposPuntosServices
+@rendermode InteractiveServer
+
+
+@inject NavigationManager navManager
+@inject IToastService toastService
+<h3>Consulta de asignacion de puntos</h3>
+
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Consulta de Asignaciones de Puntos</h5>
+        <a href="/create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Crear
+        </a>
+    </div>
+
+    <div class="card-body">
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-3">
+                <label>Estudiante:</label>
+                <select class="form-select" @bind="filtroEstudianteId">
+                    <option value="0">Todos los estudiantes</option>
+                    @foreach (var est in listaEstudiantes)
+                    {
+                        <option value="@est.EstudianteId">@est.Nombres</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>Desde:</label>
+                <InputDate class="form-control" @bind-Value="filtroFechaDesde" />
+            </div>
+            <div class="col-md-3">
+                <label>Hasta:</label>
+                <div class="input-group">
+                    <InputDate class="form-control" @bind-Value="filtroFechaHasta" />
+                    <button class="btn btn-outline-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-2 text-end">
+            <div class="col">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="Restablecer">
+                    <i class="bi bi-arrow-clockwise"></i> Restablecer Filtros
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <QuickGrid Items="@lista.AsQueryable()" Pagination="@pagination" Class="table table-hover align-middle">
+                <PropertyColumn Property="@(a => a.IdAsignacion)" Title="ID" Sortable="true" />
+                <PropertyColumn Property="@(a => a.Fecha)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+                <TemplateColumn Title="Estudiante">
+                    @(context.Estudiante != null ? context.Estudiante.Nombres : "Desconocido")
+                </TemplateColumn>
+                <PropertyColumn Property="@(a => a.TotalPuntos)" Title="Total Puntos" Sortable="true" />
+                <TemplateColumn Title="">
+                    <a href="/edit/@context.IdAsignacion" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </TemplateColumn>
+            </QuickGrid>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div class="text-muted fw-bold">
+                Cantidad: @lista.Count 
+            </div>
+            <Paginator State="@pagination" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<AsignacionesPuntos> lista { get; set; } = new List<AsignacionesPuntos>();
+    public List<AsignacionesPuntos> listaCompleta { get; set; } = new List<AsignacionesPuntos>();
+    public List<Estudiantes> listaEstudiantes { get; set; } = new List<Estudiantes>();
+
+    public int filtroEstudianteId { get; set; } = 0;
+    public DateTime? filtroFechaDesde { get; set; }
+    public DateTime? filtroFechaHasta { get; set; }
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaEstudiantes = await estudiantesServices.ObtenerTodos();
+        listaCompleta = await asignacionesServices.ObtenerTodos();
+        lista = listaCompleta.ToList();
+    }
+
+    private void Buscar()
+    {
+        lista = listaCompleta.ToList();
+
+        if (filtroEstudianteId > 0)
+        {
+            lista = lista.Where(a => a.EstudianteId == filtroEstudianteId).ToList();
+        }
+
+        if (filtroFechaDesde.HasValue)
+        {
+            lista = lista.Where(a => a.Fecha.Date >= filtroFechaDesde.Value.Date).ToList();
+        }
+
+        if (filtroFechaHasta.HasValue)
+        {
+            lista = lista.Where(a => a.Fecha.Date <= filtroFechaHasta.Value.Date).ToList();
+        }
+
+        if (lista.Count == 0)
+        {
+            toastService.ShowWarning("No se encontraron coincidencias");
+        }
+    }
+
+    private void Restablecer()
+    {
+        filtroEstudianteId = 0;
+        filtroFechaDesde = null;
+        filtroFechaHasta = null;
+        lista = listaCompleta.ToList();
+    }
+}
