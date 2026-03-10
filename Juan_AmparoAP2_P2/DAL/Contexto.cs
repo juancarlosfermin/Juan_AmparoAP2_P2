@@ -27,8 +27,8 @@ namespace Juan_AmparoAP2_P2.DAL
 
             modelBuilder.Entity<TiposPuntos>().HasData(
                 new TiposPuntos { TipoId = 1, Nombre = "Participacion", Descripcion = "Participacion en clase", ValorPuntos = 5, Color = "primary", Icono = "bi-hand-thumbs-up", Activo = true },
-                new TiposPuntos { TipoId = 2, Nombre = "Tarea Entregada", Descripcion = "Entrega de tarea", ValorPuntos = 10, Color = "success", Icono = "bi-journal-check", Activo = true },
-                new TiposPuntos { TipoId = 3, Nombre = "Proyecto", Descripcion = "Entrega de proyecto", ValorPuntos = 20, Color = "warning", Icono = "bi-lightbulb", Activo = true }
+                new TiposPuntos { TipoId = 2, Nombre = "Tarea Entregada", Descripcion = "Entrega DE tarea", ValorPuntos = 10, Color = "success", Icono = "bi-journal-check", Activo = true },
+                new TiposPuntos { TipoId = 3, Nombre = "Proyeto", Descripcion = "Entrega de proyecto", ValorPuntos = 20, Color = "warning", Icono = "bi-lightbulb", Activo = true }
             );
         }
     }
